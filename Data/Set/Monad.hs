@@ -1,4 +1,82 @@
+{-# LANGUAGE Safe  #-}
 {-# LANGUAGE GADTs #-}
+
+{-|
+
+The @set-monad@ library exports the @Set@ abstract data type and
+set-manipulating functions. These functions behave exactly as their namesakes
+from the @Data.Set@ module of the @containers@ library. In addition, the
+@set-monad@ library extends @Data.Set@ by providing @Functor@, @Applicative@,
+@Alternative@, @Monad@, and @MonadPlus@ instances for sets.
+
+In other words, you can use the @set-monad@ library as a drop-in replacement
+for the @Data.Set@ module of the @containers@ library and, in addition, you
+will also get the aforementioned instances which are not available in the
+@containers@ package.
+
+It is not possible to directly implement instances for the aforementioned
+standard Haskell type classes for the @Set@ data type from the @containers@
+library. This is because the key operations @map@ and @union@, are constrained
+with @Ord@ as follows.
+
+> map :: (Ord a, Ord b) => (a -> b) -> Set a -> Set b
+> union :: (Ord a) => Set a -> Set a -> Set a
+
+The @set-monad@ library provides the type class instances by wrapping the
+constrained @Set@ type into a data type that has unconstrained constructors
+corresponding to monadic combinators. The data type constructors that
+represent monadic combinators are evaluated with a constrained run function.
+This elevates the need to use the constraints in the instance definitions
+(this is what prevents a direct definition). The wrapping and unwrapping
+happens internally in the library and does not affect its interface.
+
+For details, see the rather compact definitions of the @run@ function and
+type class instances. The left identity and associativity monad laws play a
+crucial role in the definition of the @run@ function. The rest of the code
+should be self explanatory.
+
+The technique is not new. This library was inspired by [1]. To my knowledge,
+the original, systematic presentation of the idea to represent monadic
+combinators as data is given in [2]. There is also a Haskell library that
+provides a generic infrastructure for the aforementioned wrapping and
+unwrapping [3].
+
+The @set-monad@ library is particularly useful for writing set-oriented code
+using the do and/or monad comprehension notations. For example, the following
+definitions now type check.
+
+> s1 :: Set (Int,Int)
+> s1 = do a <- fromList [1 .. 4]
+>         b <- fromList [1 .. 4]
+>         return (a,b)
+
+> -- with -XMonadComprehensions
+> s2 :: Set (Int,Int)
+> s2 = [ (a,b) | (a,b) <- s1, even a, even b ]
+
+> s3 :: Set Int
+> s3 = fmap (+1) (fromList [1 .. 4])
+
+As noted in [1], the implementation technique can be used for monadic
+libraries and EDSLs with restricted types (compiled EDSLs often restrict the
+types that they can handle). Haskell's standard monad type class can be used
+for restricted monad instances. There is no need to resort to GHC extensions
+that rebind the standard monadic combinators with the library or EDSL specific
+ones.
+
+@[@1@]@ CSDL Blog: The home of applied functional programming at KU. Monad
+Reification in Haskell and the Sunroof Javascript compiler.
+<http://www.ittc.ku.edu/csdlblog/?p=88>
+
+@[@2@]@ Chuan-kai Lin. 2006. Programming monads operationally with Unimo. In
+Proceedings of the eleventh ACM SIGPLAN International Conference on Functional
+Programming (ICFP '06). ACM.
+
+@[@3@]@ Heinrich Apfelmus. The operational package.
+<http://hackage.haskell.org/package/operational>
+
+-}
+
 
 module Data.Set.Monad (
   -- * Set type
@@ -91,6 +169,17 @@ data Set a where
   Zero   :: Set a
   Plus   :: Set a -> Set a -> Set a
 
+run :: (Ord a) => Set a -> S.Set a
+run (Prim s)              = s
+run (Return a)            = S.singleton a
+run (Zero)                = S.empty
+run (Plus ma mb)          = S.union (run ma) (run mb)
+run (Bind (Prim s) f)     = S.foldl' S.union S.empty (S.map (run . f) s)
+run (Bind (Return a) f)   = run (f a)
+run (Bind Zero _)         = S.empty
+run (Bind (Plus ma mb) f) = run (Plus (Bind ma f) (Bind mb f))
+run (Bind (Bind m f) g)   = run (Bind m (\a -> Bind (f a) g))
+
 instance F.Functor Set where
   fmap = liftM
 
@@ -130,24 +219,13 @@ instance (Read a, Ord a) => Read (Set a) where
 instance (NFData a, Ord a) => NFData (Set a) where
   rnf = rnf . run
 
-run :: (Ord a) => Set a -> S.Set a
-run (Prim s)              = s
-run (Return a)            = S.singleton a
-run (Zero)                = S.empty
-run (Plus ma mb)          = S.union (run ma) (run mb)
-run (Bind (Prim s) f)     = S.foldl' S.union S.empty (S.map (run . f) s)
-run (Bind (Return a) f)   = run (f a)
-run (Bind Zero _)         = S.empty
-run (Bind (Plus ma mb) f) = run (Plus (Bind ma f) (Bind mb f))
-run (Bind (Bind m f) g)   = run (Bind m (\a -> Bind (f a) g))
-
 infixl 9 \\
 
 (\\) :: (Ord a) => Set a -> Set a -> Set a
 m1 \\ m2 = difference m1 m2
 
 null :: (Ord a) => Set a -> Bool
-null = S.null . run 
+null = S.null . run
 
 size :: (Ord a) => Set a -> Int
 size = S.size . run
