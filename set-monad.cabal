@@ -90,3 +90,9 @@ library
   exposed-modules:  Data.Set.Monad
   build-depends:    base >=4 && <5, deepseq, containers
   ghc-options:      -O3 -Wall
+
+test-suite tests
+  main-is: Tests.hs
+  type: exitcode-stdio-1.0
+  build-depends: base >=4 && <5, deepseq, containers, QuickCheck
+  ghc-options: -O3 -Wall
