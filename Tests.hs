@@ -13,6 +13,9 @@ import Control.Monad
 instance (Arbitrary a, Ord a) => Arbitrary (Set a) where
   arbitrary = fmap fromList arbitrary
 
+prop_fromList_toList :: Set Integer -> Bool
+prop_fromList_toList x = fromList (toList x) == x
+
 prop_monoid_law_1 :: Set Integer -> Bool
 prop_monoid_law_1 x = mempty `mappend` x == x
 
@@ -76,6 +79,9 @@ prop_monad_plus_law_3 x y z = ((x `mplus` y) `mplus` z) == (x `mplus` (y `mplus`
 
 main :: IO ()
 main = do
+  putStrLn "prop_fromList_toList"
+  quickCheck prop_fromList_toList
+
   putStrLn "prop_monoid_law_1:"
   quickCheck prop_monoid_law_1
   putStrLn "prop_monoid_law_2:"
