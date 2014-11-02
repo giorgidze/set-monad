@@ -1,12 +1,12 @@
 name:               set-monad
-version:            0.1.0.0
+version:            0.2.0.0
 synopsis:           Set monad
 description:
   The @set-monad@ library exports the @Set@ abstract data type and
   set-manipulating functions. These functions behave exactly as their namesakes
   from the @Data.Set@ module of the @containers@ library. In addition, the
   @set-monad@ library extends @Data.Set@ by providing @Functor@, @Applicative@,
-  @Alternative@, @Monad@, and @MonadPlus@ instances for sets.
+  @Alternative@, @Foldable@, @Monad@, and @MonadPlus@ instances for sets.
   .
   In other words, you can use the @set-monad@ library as a drop-in replacement
   for the @Data.Set@ module of the @containers@ library and, in addition, you
