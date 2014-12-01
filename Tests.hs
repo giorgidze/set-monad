@@ -7,8 +7,10 @@ import Test.QuickCheck.Function
 
 import Data.Monoid
 import Data.Set.Monad hiding (empty)
+import qualified Data.Set.Monad as S
 import Control.Applicative
 import Control.Monad
+import qualified Data.Foldable as Foldable
 
 instance (Arbitrary a, Ord a) => Arbitrary (Set a) where
   arbitrary = fmap fromList arbitrary
@@ -77,6 +79,9 @@ prop_monad_plus_law_2 x = (x `mplus` mzero) == x
 prop_monad_plus_law_3 :: Set Integer -> Set Integer -> Set Integer -> Bool
 prop_monad_plus_law_3 x y z = ((x `mplus` y) `mplus` z) == (x `mplus` (y `mplus` z))
 
+prop_foldable :: Set Integer -> Bool
+prop_foldable s = Foldable.foldr (+) 0 s == S.foldr (+) 0 s
+
 main :: IO ()
 main = do
   putStrLn "prop_fromList_toList"
@@ -122,3 +127,5 @@ main = do
   putStrLn "prop_monad_plus_law_3:"
   quickCheck prop_monad_plus_law_3
   
+  putStrLn "prop_foldable:"
+  quickCheck prop_foldable
