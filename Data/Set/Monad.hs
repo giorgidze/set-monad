@@ -158,7 +158,6 @@ import qualified Data.Functor         as F
 import qualified Control.Applicative  as A
 import qualified Data.Foldable        as Foldable
 
-import Data.Monoid
 import Data.Foldable (Foldable)
 import Control.Arrow
 import Control.Monad
@@ -208,13 +207,16 @@ instance MonadPlus Set where
   mzero = Zero
   mplus = Plus
 
+instance Semigroup (Set a) where
+  (<>) = Plus
+
 instance (Ord a) => Monoid (Set a) where
   mempty  = empty
   mappend = union
   mconcat = unions
 
 instance Foldable Set where
-    foldr f def m = 
+    foldr f def m =
         case m of
             Prim s -> S.foldr f def s
             Return a -> f a def
