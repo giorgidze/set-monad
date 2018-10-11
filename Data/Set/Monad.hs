@@ -207,6 +207,9 @@ instance MonadPlus Set where
   mzero = Zero
   mplus = Plus
 
+instance Semigroup (Set a) where
+  (<>) = Plus
+
 instance (Ord a) => Monoid (Set a) where
   mempty  = empty
   mappend = union
