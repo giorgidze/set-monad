@@ -159,6 +159,7 @@ import qualified Control.Applicative  as A
 import qualified Data.Foldable        as Foldable
 
 import Data.Foldable (Foldable)
+import Data.Semigroup
 import Control.Arrow
 import Control.Monad
 import Control.DeepSeq
