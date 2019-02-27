@@ -91,6 +91,7 @@ module Data.Set.Monad (
   , notMember
   , isSubsetOf
   , isProperSubsetOf
+  , disjoint
 
   -- * Construction
   , empty
@@ -134,6 +135,10 @@ module Data.Set.Monad (
   , minView
 
   -- * Conversion
+
+  -- ** Prelude Set
+  , toPreludeSet
+  , fromPreludeSet
 
   -- ** List
   , elems
@@ -263,6 +268,9 @@ isSubsetOf s1 s2 = S.isSubsetOf (run s1) (run s2)
 isProperSubsetOf :: Ord a => Set a -> Set a -> Bool
 isProperSubsetOf s1 s2 = S.isProperSubsetOf (run s1) (run s2)
 
+disjoint :: Ord a => Set a -> Set a -> Bool
+disjoint s1 s2 = S.disjoint (run s1) (run s2)
+
 empty :: (Ord a) => Set a
 empty = Prim S.empty
 
@@ -343,6 +351,12 @@ maxView = fmap (second Prim) . S.maxView . run
 
 minView :: (Ord a) => Set a -> Maybe (a,Set a)
 minView = fmap (second Prim) . S.minView . run
+
+toPreludeSet :: (Ord a) => Set a -> S.Set a
+toPreludeSet = run
+
+fromPreludeSet :: (Ord a) => S.Set a -> Set a
+fromPreludeSet = Prim
 
 elems :: (Ord a) => Set a -> [a]
 elems = toList

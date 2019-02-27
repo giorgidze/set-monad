@@ -15,6 +15,9 @@ import qualified Data.Foldable as Foldable
 instance (Arbitrary a, Ord a) => Arbitrary (Set a) where
   arbitrary = fmap fromList arbitrary
 
+prop_fromPreludeSet_toPreludeSet :: Set Integer -> Bool
+prop_fromPreludeSet_toPreludeSet x = fromPreludeSet (toPreludeSet x) == x
+
 prop_fromList_toList :: Set Integer -> Bool
 prop_fromList_toList x = fromList (toList x) == x
 
@@ -84,6 +87,9 @@ prop_foldable s = Foldable.foldr (+) 0 s == S.foldr (+) 0 s
 
 main :: IO ()
 main = do
+  putStrLn "prop_fromPreludeSet_toPreludeSet"
+  quickCheck prop_fromPreludeSet_toPreludeSet
+
   putStrLn "prop_fromList_toList"
   quickCheck prop_fromList_toList
 
