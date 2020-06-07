@@ -169,11 +169,11 @@ import Control.Monad
 import Control.DeepSeq
 
 data Set a where
-  Prim   :: (Ord a) => S.Set a -> Set a
+  Prim   :: (Ord a) => !(S.Set a) -> Set a
   Return :: a -> Set a
-  Bind   :: Set a -> (a -> Set b) -> Set b
+  Bind   :: !(Set a) -> (a -> Set b) -> Set b
   Zero   :: Set a
-  Plus   :: Set a -> Set a -> Set a
+  Plus   :: !(Set a) -> !(Set a) -> Set a
 
 run :: (Ord a) => Set a -> S.Set a
 run (Prim s)                        = s
