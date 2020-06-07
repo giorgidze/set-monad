@@ -163,7 +163,7 @@ import qualified Data.Functor         as F
 import qualified Control.Applicative  as A
 import qualified Data.Foldable        as Foldable
 
-import Data.Foldable (Foldable)
+import Data.Foldable (Foldable, all)
 import Control.Arrow
 import Control.Monad
 import Control.DeepSeq
@@ -229,6 +229,7 @@ instance Foldable Set where
             Plus ma mb -> Foldable.foldr f (Foldable.foldr f def ma) mb
             Bind s g -> Foldable.foldr f' def s
                 where f' x b = Foldable.foldr f b (g x)
+    null = null
 
 instance (Ord a) => Eq (Set a) where
   s1 == s2 = run s1 == run s2
@@ -250,8 +251,20 @@ infixl 9 \\
 (\\) :: (Ord a) => Set a -> Set a -> Set a
 m1 \\ m2 = difference m1 m2
 
-null :: (Ord a) => Set a -> Bool
-null = S.null . run
+null :: Set a -> Bool
+-- We don't usually need to run the set
+-- just to check if it's null. We can dig
+-- (deeply) through Plus constructors without
+-- actually calculating any unions. We can look
+-- shallowly through binds. Why don't we look deeply
+-- through binds? We don't want to apply `f` to the
+-- same value multiple times in case of a union.
+-- Can we do a bit better? I'm not sure.
+null (Prim s) = S.null s
+null (Return _) = False
+null Zero = True
+null (Plus s t) = null s && null t
+null (Bind s f) = all (null . f) s
 
 size :: (Ord a) => Set a -> Int
 size = S.size . run
