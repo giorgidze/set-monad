@@ -251,7 +251,7 @@ infixl 9 \\
 (\\) :: (Ord a) => Set a -> Set a -> Set a
 m1 \\ m2 = difference m1 m2
 
-null :: (Ord a) => Set a -> Bool
+null :: Set a -> Bool
 -- We don't usually need to run the set
 -- just to check if it's null. We can dig
 -- (deeply) through Plus constructors without
