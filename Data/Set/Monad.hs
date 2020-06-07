@@ -180,18 +180,7 @@ run (Prim s)                        = s
 run (Return a)                      = S.singleton a
 run (Zero)                          = S.empty
 run (Plus ma mb)                    = run ma `S.union` run mb
-run (Bind (Prim s) f)               = S.foldl' S.union S.empty (S.map (run . f) s)
-run (Bind (Return a) f)             = run (f a)
-run (Bind Zero _)                   = S.empty
-run (Bind (Plus (Prim s) ma) f)     = run (Bind (Prim (s `S.union` run ma)) f)
-run (Bind (Plus ma (Prim s)) f)     = run (Bind (Prim (run ma `S.union` s)) f)
-run (Bind (Plus (Return a) ma) f)   = run (Plus (f a) (Bind ma f))
-run (Bind (Plus ma (Return a)) f)   = run (Plus (Bind ma f) (f a))
-run (Bind (Plus Zero ma) f)         = run (Bind ma f)
-run (Bind (Plus ma Zero) f)         = run (Bind ma f)
-run (Bind (Plus (Plus ma mb) mc) f) = run (Bind (Plus ma (Plus mb mc)) f)
-run (Bind (Plus ma mb) f)           = run (Plus (Bind ma f) (Bind mb f))
-run (Bind (Bind ma f) g)            = run (Bind ma (\a -> Bind (f a) g))
+run (Bind s f)               = foldl' (\acc a -> acc `S.union` run (f a)) S.empty s
 
 instance F.Functor Set where
   fmap = liftM
