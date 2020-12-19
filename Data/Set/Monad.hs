@@ -163,7 +163,6 @@ import qualified Data.Functor         as F
 import qualified Control.Applicative  as A
 import qualified Data.Foldable        as Foldable
 
-import Data.Foldable (Foldable)
 import Control.Arrow
 import Control.Monad
 import Control.DeepSeq
@@ -220,8 +219,9 @@ instance (Ord a) => Monoid (Set a) where
   mappend = union
   mconcat = unions
 
-instance Foldable Set where
-    foldr f def m =
+
+foldSet :: (t -> b -> b) -> b -> Set t -> b
+foldSet f def m =
         case m of
             Prim s -> S.foldr f def s
             Return a -> f a def
@@ -229,6 +229,14 @@ instance Foldable Set where
             Plus ma mb -> Foldable.foldr f (Foldable.foldr f def ma) mb
             Bind s g -> Foldable.foldr f' def s
                 where f' x b = Foldable.foldr f b (g x)
+
+instance Foldable Set where
+    foldr = foldSet
+
+instance Traversable Set where
+   traverse f = foldSet step (pure Zero)
+     where
+       step x acc = Plus <$> acc <*> (Return <$> f x)
 
 instance (Ord a) => Eq (Set a) where
   s1 == s2 = run s1 == run s2

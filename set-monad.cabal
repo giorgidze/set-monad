@@ -88,5 +88,16 @@ source-repository head
 
 library
   exposed-modules:  Data.Set.Monad
-  build-depends:    base >=4.9 && < 5, deepseq, containers
+  build-depends:    base >=4.9 && < 5
+                  , deepseq
+                  , containers
   ghc-options:      -O3 -Wall
+
+test-suite set-monad-testsuite
+  type:             exitcode-stdio-1.0
+  main-is:          Tests.hs
+  other-modules:    Data.Set.Monad
+  build-depends:    base
+                  , deepseq
+                  , containers
+                  , QuickCheck
