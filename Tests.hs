@@ -6,6 +6,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Function
 
 import Data.Monoid
+import Data.Word
 import Data.Set.Monad hiding (empty)
 import qualified Data.Set.Monad as S
 import Control.Applicative
@@ -85,6 +86,10 @@ prop_monad_plus_law_3 x y z = ((x `mplus` y) `mplus` z) == (x `mplus` (y `mplus`
 prop_foldable :: Set Integer -> Bool
 prop_foldable s = Foldable.foldr (+) 0 s == S.foldr (+) 0 s
 
+prop_traversable :: Set Word8 -> Bool
+prop_traversable s = traverse f s == (fromList <$> traverse f (toList s))
+  where f x = if x == 0 then Nothing else Just x
+
 main :: IO ()
 main = do
   putStrLn "prop_fromPreludeSet_toPreludeSet"
@@ -132,6 +137,9 @@ main = do
   quickCheck prop_monad_plus_law_2
   putStrLn "prop_monad_plus_law_3:"
   quickCheck prop_monad_plus_law_3
-  
+
   putStrLn "prop_foldable:"
   quickCheck prop_foldable
+
+  putStrLn "prop_traversable:"
+  quickCheck prop_traversable
