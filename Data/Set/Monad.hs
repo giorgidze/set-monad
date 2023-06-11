@@ -156,11 +156,12 @@ module Data.Set.Monad (
   , valid
   ) where
 
-import Prelude hiding (null, filter, map, foldr, foldl)
+import Prelude hiding (Foldable(..), filter, map, foldr, foldl)
 import qualified Data.List            as L
 import qualified Data.Set             as S
 import qualified Data.Functor         as F
 import qualified Control.Applicative  as A
+import           Data.Foldable        (Foldable)
 import qualified Data.Foldable        as Foldable
 
 import Control.Arrow
